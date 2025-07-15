@@ -8,6 +8,7 @@ DOCKER_REGISTRY ?= ghcr.io
 DOCKER_REPO ?= zerofy-pro/rbac-collector
 DOCKER_IMAGE := $(DOCKER_REGISTRY)/$(DOCKER_REPO)
 
+
 # Helm parameters
 HELM_CHART_DIR := helm
 HELM_CHART_NAME := rbac-collector
@@ -49,14 +50,19 @@ docker-build: ## Build the Docker image
 	@echo ">> building docker image $(DOCKER_IMAGE):$(VERSION)"
 	docker build -t $(DOCKER_IMAGE):$(VERSION) .
 
-.PHONY: docker-push
-docker-push: ## Push the Docker image to the registry
-	@echo ">> pushing docker image $(DOCKER_IMAGE):$(VERSION)"
+.PHONY: docker-push-tag
+docker-push-tag: ## Push a versioned tag and 'latest'
+	@echo ">> pushing docker image $(DOCKER_IMAGE):$(VERSION) and :latest"
 	docker push $(DOCKER_IMAGE):$(VERSION)
-	@if [ "$(VERSION)" != "latest" ]; then \
-		docker tag $(DOCKER_IMAGE):$(VERSION) $(DOCKER_IMAGE):latest; \
-		docker push $(DOCKER_IMAGE):latest; \
-	fi
+	docker tag $(DOCKER_IMAGE):$(VERSION) $(DOCKER_IMAGE):latest
+	docker push $(DOCKER_IMAGE):latest
+
+.PHONY: docker-push-edge
+docker-push-edge: ## Push the 'edge' tag for the main branch
+	@echo ">> pushing docker image $(DOCKER_IMAGE):edge"
+	docker tag $(DOCKER_IMAGE):$(VERSION) $(DOCKER_IMAGE):edge
+	docker push $(DOCKER_IMAGE):edge
+
 
 # ====================================================================================
 # HELM
@@ -76,8 +82,11 @@ helm-lint: ## Lint the Helm chart
 # CI/CD
 # ====================================================================================
 
-.PHONY: release
-release: build docker-build docker-push helm-package ## Run the full release process (build, docker, helm)
+.PHONY: ci-main-push
+ci-main-push: build docker-build docker-push-edge ## CI target for pushes to the main branch
+
+.PHONY: ci-tag-release
+ci-tag-release: build docker-build docker-push-tag helm-package ## CI target for creating a tagged release
 
 .PHONY: clean
 clean: ## Clean up build artifacts
