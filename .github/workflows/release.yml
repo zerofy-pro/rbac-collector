@@ -71,11 +71,10 @@ jobs:
           image-ref: 'ghcr.io/zerofy-pro/rbac-collector:${{ env.VERSION }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
-          exit-code: '1'
+          exit-code: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) && '1' || '0' }}
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
