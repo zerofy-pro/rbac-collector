@@ -1,3 +1,6 @@
+# Makefile for rbac-collector
+
+# Go parameters
 GO_PACKAGE := zerofy.pro/rbac-collector
 BINARY_NAME := rbac-collector
 VERSION ?= $(shell git describe --tags --always --dirty)
@@ -42,7 +45,7 @@ tidy: ## Tidy go modules
 	go mod tidy
 
 # ====================================================================================
-# DOCKER
+# DOCKER & HELM
 # ====================================================================================
 
 .PHONY: docker-build
@@ -50,23 +53,28 @@ docker-build: ## Build the Docker image
 	@echo ">> building docker image $(DOCKER_IMAGE):$(VERSION)"
 	docker build -t $(DOCKER_IMAGE):$(VERSION) .
 
+.PHONY: docker-push
+docker-push: ## Push the Docker image based on the VERSION
+	@if [[ "$(VERSION)" =~ ^v[0-9] ]]; then \
+		$(MAKE) docker-push-tag; \
+	elif [ "$(VERSION)" = "edge" ]; then \
+		$(MAKE) docker-push-edge; \
+	else \
+		echo ">> Not a release tag or edge build, skipping push for version $(VERSION)"; \
+	fi
+
 .PHONY: docker-push-tag
-docker-push-tag: ## Push a versioned tag and 'latest'
+docker-push-tag: ## (internal) Push a versioned tag and 'latest'
 	@echo ">> pushing docker image $(DOCKER_IMAGE):$(VERSION) and :latest"
 	docker push $(DOCKER_IMAGE):$(VERSION)
 	docker tag $(DOCKER_IMAGE):$(VERSION) $(DOCKER_IMAGE):latest
 	docker push $(DOCKER_IMAGE):latest
 
 .PHONY: docker-push-edge
-docker-push-edge: ## Push the 'edge' tag for the main branch
+docker-push-edge: ## (internal) Push the 'edge' tag for the main branch
 	@echo ">> pushing docker image $(DOCKER_IMAGE):edge"
 	docker tag $(DOCKER_IMAGE):$(VERSION) $(DOCKER_IMAGE):edge
 	docker push $(DOCKER_IMAGE):edge
-
-
-# ====================================================================================
-# HELM
-# ====================================================================================
 
 .PHONY: helm-package
 helm-package: ## Package the Helm chart
@@ -77,16 +85,6 @@ helm-package: ## Package the Helm chart
 helm-lint: ## Lint the Helm chart
 	@echo ">> linting helm chart..."
 	helm lint $(HELM_CHART_DIR)
-
-# ====================================================================================
-# CI/CD
-# ====================================================================================
-
-.PHONY: ci-main-push
-ci-main-push: build docker-build docker-push-edge ## CI target for pushes to the main branch
-
-.PHONY: ci-tag-release
-ci-tag-release: build docker-build docker-push-tag helm-package ## CI target for creating a tagged release
 
 .PHONY: clean
 clean: ## Clean up build artifacts
