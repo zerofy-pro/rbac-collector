@@ -1,16 +1,12 @@
-# Makefile for rbac-collector
-
-# Go parameters
 GO_PACKAGE := zerofy.pro/rbac-collector
 BINARY_NAME := rbac-collector
 VERSION ?= $(shell git describe --tags --always --dirty)
 APP_VERSION ?= $(subst v,,$(VERSION))
 
 # Docker parameters
-DOCKER_REGISTRY := ghcr.io
-DOCKER_IMAGE_NAME := $(shell echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
-DOCKER_IMAGE := $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME)
-DOCKER_TAGS := $(VERSION) latest
+DOCKER_REGISTRY ?= ghcr.io
+DOCKER_REPO ?= zerofy-pro/rbac-collector
+DOCKER_IMAGE := $(DOCKER_REGISTRY)/$(DOCKER_REPO)
 
 # Helm parameters
 HELM_CHART_DIR := helm
