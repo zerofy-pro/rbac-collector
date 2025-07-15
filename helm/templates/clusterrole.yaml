@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "rbac-collector.fullname" . }}
+  labels:
+    {{- include "rbac-collector.labels" . | nindent 4 }}
+rules:
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources:
+  - clusterroles
+  - clusterrolebindings
+  - roles
+  - rolebindings
+  verbs: ["get", "list", "watch"]
