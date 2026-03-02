@@ -1,4 +1,4 @@
-name: Global Standards & Alerts
+name: Global Standards & Alertss
 
 on:
   pull_request:
