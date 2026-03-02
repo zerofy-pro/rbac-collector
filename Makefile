@@ -1,4 +1,4 @@
-# Makefile for rbac-collector
+# Makefile for rbac-collectorr
 
 # Go parameters
 GO_PACKAGE := zerofy.pro/rbac-collector
