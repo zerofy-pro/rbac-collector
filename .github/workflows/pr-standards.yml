@@ -1,0 +1,10 @@
+name: Global Standards & Alerts
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, closed]
+
+jobs:
+  call-central-workflow:
+    uses: zerofy-pro/pr-automation-center/.github/workflows/global-pr-standards.yml@main
+    secrets: inherit 
