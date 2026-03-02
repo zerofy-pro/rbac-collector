@@ -2,7 +2,7 @@ name: Global Standards & Alerts
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened, closed]
+    types: [edited, closed]
 
 jobs:
   call-central-workflow:
